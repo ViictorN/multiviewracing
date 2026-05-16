@@ -9,7 +9,8 @@ import { useIsMobile } from '@/hooks/use-mobile';
 type VideoInfo = {
   id: string;
   title: string;
-  videoId: string;
+  videoId?: string;
+  iframeUrl?: string;
   driver?: string;
   team?: string;
 };
@@ -20,6 +21,7 @@ const VIDEOS: VideoInfo[] = [
   { id: 'est', title: 'Onboard: Kevin Estre', videoId: 'uofChxeVADU', driver: 'EST', team: 'Porsche' },
   { id: 'far', title: 'Onboard: Augusto Farfus', videoId: 'X2Icmd1PXOU', driver: 'FAR', team: 'BMW' },
   { id: 'pit', title: 'Pit Lane Camera', videoId: 'OZdE2ZOAXfo' },
+  { id: 'telemetry', title: 'Live Timing', iframeUrl: '/telemetry.html' },
 ];
 
 type LayoutMode = 'sidebar-right' | 'sidebar-left' | 'sidebar-bottom' | 'grid' | 'main-only';
@@ -133,12 +135,26 @@ export default function RaceControlPage() {
       <main className={cn(getLayoutClasses(), "flex-1")}>
         {/* Render Main Video First */}
         <div key={`main-${mainVideoId}`} className={cn("relative z-0 bg-black group", getMainVideoClasses())}>
-          <iframe
-            src={`https://www.youtube.com/embed/${VIDEOS.find(v => v.id === mainVideoId)?.videoId}?autoplay=1&mute=1&playsinline=1&controls=1&modestbranding=1&rel=0`}
-            className="absolute inset-0 w-full h-full pointer-events-auto border-none"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-          />
+          {VIDEOS.find(v => v.id === mainVideoId)?.videoId ? (
+            <iframe
+              src={`https://www.youtube.com/embed/${VIDEOS.find(v => v.id === mainVideoId)?.videoId}?autoplay=1&mute=1&playsinline=1&controls=1&modestbranding=1&rel=0`}
+              className="absolute inset-0 w-full h-full pointer-events-auto border-none"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          ) : (
+            <div className="absolute inset-0 w-full h-full shadow-[inset_0_0_50px_rgba(225,29,72,0.1)] border-[0.5px] border-red-500/20 bg-neutral-950 flex flex-col pointer-events-auto">
+              <div className="h-8 border-b border-red-500/20 bg-black/50 flex items-center px-4 shrink-0">
+                <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse mr-2" />
+                <span className="text-[10px] font-mono text-red-400 uppercase tracking-widest font-semibold flex-1">Live Telemetry Data</span>
+              </div>
+              <iframe
+                src={VIDEOS.find(v => v.id === mainVideoId)?.iframeUrl}
+                className="flex-1 w-full border-none bg-neutral-950"
+                allowFullScreen
+              />
+            </div>
+          )}
           {currentLayoutMode !== 'main-only' && (
             <div className="absolute top-0 left-0 right-0 p-4 bg-gradient-to-b from-black/80 via-black/30 to-transparent pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity z-20">
               <h3 className="text-xl font-medium text-white drop-shadow-md">
@@ -157,15 +173,30 @@ export default function RaceControlPage() {
               getSideVideoClasses(index)
             )}
           >
-            <iframe
-              src={`https://www.youtube.com/embed/${video.videoId}?autoplay=1&mute=1&playsinline=1&controls=1&modestbranding=1&rel=0`}
-              className="absolute inset-0 w-full h-full border-none"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              loading="lazy"
-              allowFullScreen
-            />
+            {video.videoId ? (
+              <iframe
+                src={`https://www.youtube.com/embed/${video.videoId}?autoplay=1&mute=1&playsinline=1&controls=1&modestbranding=1&rel=0`}
+                className="absolute inset-0 w-full h-full border-none"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                loading="lazy"
+                allowFullScreen
+              />
+            ) : (
+              <div className="absolute inset-0 w-full h-full flex flex-col bg-neutral-950 border-[0.5px] border-red-500/20 shadow-[inset_0_0_30px_rgba(225,29,72,0.1)] pointer-events-auto">
+                <div className="h-6 border-b border-red-500/20 bg-black/50 flex items-center px-2 shrink-0">
+                  <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse mr-2" />
+                  <span className="text-[9px] font-mono text-red-500/80 uppercase tracking-widest flex-1">Telemetry</span>
+                </div>
+                <iframe
+                  src={video.iframeUrl}
+                  className="flex-1 w-full border-none bg-neutral-950"
+                  loading="lazy"
+                  allowFullScreen
+                />
+              </div>
+            )}
             
-            <div className="absolute top-0 left-0 right-0 p-2 bg-gradient-to-b from-black/80 to-transparent pointer-events-none z-20 flex justify-between items-start h-12">
+            <div className={cn("absolute top-0 left-0 right-0 p-2 bg-gradient-to-b from-black/80 to-transparent pointer-events-none z-20 flex justify-between items-start", video.videoId ? "h-12" : "h-10 opacity-0 group-hover:opacity-100 transition-opacity")}>
               <h3 className="font-medium text-xs text-neutral-200 drop-shadow-md truncate max-w-[70%]">
                 {video.title}
               </h3>
