@@ -214,10 +214,10 @@ export default function RaceControlPage() {
                       <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse mr-2" />
                       <span className="text-[9px] font-mono text-red-500/80 uppercase tracking-widest flex-1">Telemetry</span>
                     </div>
-                    <div className="relative flex-1 overflow-hidden pointer-events-none">
+                    <div className="relative flex-1 overflow-hidden">
                       <iframe
                         src={video.iframeUrl}
-                        className="absolute left-0 w-full border-none bg-white"
+                        className="absolute left-0 w-full border-none bg-white pointer-events-auto"
                         style={{ 
                           top: "-240px", 
                           height: "calc(100% + 240px)",
