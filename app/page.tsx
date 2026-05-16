@@ -21,7 +21,7 @@ const VIDEOS: VideoInfo[] = [
   { id: 'est', title: 'Onboard: Kevin Estre', videoId: 'uofChxeVADU', driver: 'EST', team: 'Porsche' },
   { id: 'far', title: 'Onboard: Augusto Farfus', videoId: 'X2Icmd1PXOU', driver: 'FAR', team: 'BMW' },
   { id: 'pit', title: 'Pit Lane Camera', videoId: 'OZdE2ZOAXfo' },
-  { id: 'telemetry', title: 'Live Timing', iframeUrl: '/telemetry.html' },
+  { id: 'telemetry', title: 'Live Timing', iframeUrl: 'https://livetiming.azurewebsites.net/events/50/results/' },
 ];
 
 type LayoutMode = 'sidebar-right' | 'sidebar-left' | 'sidebar-bottom' | 'grid' | 'main-only';
@@ -150,7 +150,8 @@ export default function RaceControlPage() {
               </div>
               <iframe
                 src={VIDEOS.find(v => v.id === mainVideoId)?.iframeUrl}
-                className="flex-1 w-full border-none bg-neutral-950"
+                className="flex-1 w-full border-none bg-white"
+                style={{ filter: "invert(1) hue-rotate(180deg) brightness(0.95) contrast(0.95)" }}
                 allowFullScreen
               />
             </div>
@@ -189,7 +190,8 @@ export default function RaceControlPage() {
                 </div>
                 <iframe
                   src={video.iframeUrl}
-                  className="flex-1 w-full border-none bg-neutral-950"
+                  className="flex-1 w-full border-none bg-white pointer-events-none"
+                  style={{ filter: "invert(1) hue-rotate(180deg) brightness(0.95) contrast(0.95)" }}
                   loading="lazy"
                   allowFullScreen
                 />
