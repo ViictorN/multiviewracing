@@ -1,0 +1,8 @@
+{
+  "name": "Multiview Racing",
+  "description": "Premium Multi-View Racing Experience. Watch multiple racing streams simultaneously.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
