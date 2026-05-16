@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Settings, Tv, LayoutGrid, Maximize, X, Square, Columns, Rows, Video, Smartphone } from 'lucide-react';
+import { Settings, Tv, LayoutGrid, Maximize, X, Square, Columns, Rows, Video, Smartphone, EyeOff, Eye } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -28,18 +28,41 @@ export default function RaceControlPage() {
   const [mainVideoId, setMainVideoId] = useState<string>('main');
   const [layoutMode, setLayoutMode] = useState<LayoutMode>('sidebar-right');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [hiddenVideoIds, setHiddenVideoIds] = useState<string[]>([]);
+  const [isLandscape, setIsLandscape] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
 
+  useEffect(() => {
+    const checkOrientation = () => setIsLandscape(window.innerWidth > window.innerHeight);
+    checkOrientation();
+    window.addEventListener('resize', checkOrientation);
+    return () => window.removeEventListener('resize', checkOrientation);
+  }, []);
+
+  // Make sure mainVideoId is never hidden
+  useEffect(() => {
+    if (hiddenVideoIds.includes(mainVideoId)) {
+      setHiddenVideoIds(prev => prev.filter(vid => vid !== mainVideoId));
+    }
+  }, [mainVideoId, hiddenVideoIds]);
+
+  const toggleVisibility = (id: string) => {
+    setHiddenVideoIds(prev => 
+      prev.includes(id) ? prev.filter(vid => vid !== id) : [...prev, id]
+    );
+  };
+
   // Handle mobile overriding
-  const currentLayoutMode = isMobile ? 'mobile' : layoutMode;
+  const currentLayoutMode = isMobile ? (isLandscape ? 'mobile-landscape' : 'mobile-portrait') : layoutMode;
 
   // Helper to get video styles depending on layout mode
   const getLayoutClasses = () => {
     switch (currentLayoutMode) {
-      case 'mobile':
+      case 'mobile-portrait':
         return "flex flex-col w-full h-full overflow-y-auto overflow-x-hidden custom-scrollbar bg-black";
       case 'sidebar-right':
+      case 'mobile-landscape':
         return "grid grid-cols-4 grid-rows-4 w-full h-full";
       case 'sidebar-left':
         return "grid grid-cols-4 grid-rows-4 w-full h-full";
@@ -56,9 +79,10 @@ export default function RaceControlPage() {
 
   const getMainVideoClasses = () => {
     switch (currentLayoutMode) {
-      case 'mobile':
+      case 'mobile-portrait':
         return "w-full aspect-video shrink-0 sticky top-0 z-30 shadow-2xl";
       case 'sidebar-right':
+      case 'mobile-landscape':
         return "col-span-3 row-span-4";
       case 'sidebar-left':
         return "col-span-3 row-span-4 col-start-2";
@@ -75,9 +99,10 @@ export default function RaceControlPage() {
 
   const getSideVideoClasses = (index: number) => {
     switch (currentLayoutMode) {
-      case 'mobile':
-        return "w-full aspect-video shrink-0";
+      case 'mobile-portrait':
+        return "w-full aspect-video shrink-0 border-t border-white/5";
       case 'sidebar-right':
+      case 'mobile-landscape':
         return `col-span-1 row-span-1 col-start-4 row-start-${index + 1}`;
       case 'sidebar-left':
         return `col-span-1 row-span-1 col-start-1 row-start-${index + 1}`;
@@ -101,7 +126,7 @@ export default function RaceControlPage() {
     return 0;
   });
 
-  const sideVideoCount = VIDEOS.filter(v => v.id !== mainVideoId);
+  const sideVideoCount = VIDEOS.filter(v => v.id !== mainVideoId && !hiddenVideoIds.includes(v.id));
 
   return (
     <div ref={containerRef} className="w-screen h-screen bg-black overflow-hidden relative font-sans text-neutral-50 flex">
@@ -129,7 +154,7 @@ export default function RaceControlPage() {
             key={video.id}
             onClick={() => setMainVideoId(video.id)}
             className={cn(
-              "relative bg-black group cursor-pointer border-[0.5px] border-white/10",
+              "relative bg-black group cursor-pointer border-[0.5px] border-white/10 overflow-hidden",
               getSideVideoClasses(index)
             )}
           >
@@ -137,16 +162,25 @@ export default function RaceControlPage() {
               src={`https://www.youtube.com/embed/${video.videoId}?autoplay=1&mute=1&playsinline=1&controls=0&modestbranding=1&rel=0`}
               className="absolute inset-0 w-full h-full border-none pointer-events-none"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              loading="lazy"
               allowFullScreen
             />
             {/* Interaction Shield */}
             <div className="absolute inset-0 z-10 bg-black/5 group-hover:bg-black/20 hover:ring-1 hover:ring-white/50 transition-all" />
             
-            <div className="absolute top-0 left-0 right-0 p-2 bg-gradient-to-b from-black/90 to-transparent pointer-events-none z-20 opacity-0 group-hover:opacity-100 transition-opacity">
-              <h3 className="font-medium text-xs text-neutral-200 drop-shadow-md truncate">
+            <div className="absolute top-0 left-0 right-0 p-2 bg-gradient-to-b from-black/90 to-transparent pointer-events-none z-20 opacity-0 group-hover:opacity-100 transition-opacity flex justify-between items-start">
+              <h3 className="font-medium text-xs text-neutral-200 drop-shadow-md truncate max-w-[80%]">
                 {video.title}
               </h3>
             </div>
+            
+            <button
+              onClick={(e) => { e.stopPropagation(); toggleVisibility(video.id); }}
+              className="absolute top-2 right-2 p-1.5 rounded-full bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity z-30 hover:bg-neutral-800"
+              title="Hide Camera"
+            >
+              <EyeOff className="w-3.5 h-3.5" />
+            </button>
             
             <div className="absolute inset-0 m-auto w-8 h-8 rounded-full bg-black/60 backdrop-blur justify-center items-center flex opacity-0 group-hover:opacity-100 transition-opacity z-20 pointer-events-none scale-90 group-hover:scale-100">
               <Maximize className="w-4 h-4 text-white" />
@@ -235,18 +269,43 @@ export default function RaceControlPage() {
                 {/* Main Camera Selection */}
                 <div>
                   <label className="text-xs font-medium text-neutral-400 uppercase tracking-wider block mb-2">Main Camera</label>
-                  <div className="space-y-1 max-h-40 overflow-y-auto pr-1 custom-scrollbar">
+                  <div className="space-y-1 max-h-40 overflow-y-auto pr-1 custom-scrollbar mb-4">
                     {VIDEOS.map(video => (
                       <button
                         key={video.id}
                         onClick={() => setMainVideoId(video.id)}
                         className={cn(
                           "w-full text-left px-3 py-2 rounded-lg text-xs transition-colors flex items-center justify-between",
-                          mainVideoId === video.id ? "bg-white/10 text-white" : "text-neutral-400 hover:bg-white/5"
+                          mainVideoId === video.id ? "bg-white/10 text-white" : "text-neutral-400 hover:bg-white/5 border border-transparent"
                         )}
                       >
                         <span className="truncate pr-2">{video.title}</span>
                         {mainVideoId === video.id && <Video className="w-3 h-3 text-red-500 shrink-0" />}
+                      </button>
+                    ))}
+                  </div>
+                  
+                  {/* Visibility Settings */}
+                  <label className="text-xs font-medium text-neutral-400 uppercase tracking-wider block mb-2">Cameras Visibility</label>
+                  <div className="space-y-1 max-h-40 overflow-y-auto pr-1 custom-scrollbar">
+                    {VIDEOS.map(video => (
+                      <button
+                        key={`vis-${video.id}`}
+                        onClick={() => video.id !== mainVideoId && toggleVisibility(video.id)}
+                        className={cn(
+                          "w-full text-left px-3 py-2 rounded-lg text-xs transition-colors flex items-center justify-between",
+                          video.id === mainVideoId ? "opacity-50 cursor-not-allowed text-neutral-500" : "text-neutral-300 hover:bg-white/5"
+                        )}
+                        disabled={video.id === mainVideoId}
+                      >
+                        <span className="truncate pr-2">{video.title}</span>
+                        {video.id === mainVideoId ? (
+                          <Eye className="w-3 h-3 text-neutral-600 shrink-0" />
+                        ) : hiddenVideoIds.includes(video.id) ? (
+                          <EyeOff className="w-3 h-3 text-neutral-500 shrink-0" />
+                        ) : (
+                          <Eye className="w-3 h-3 text-red-500 shrink-0" />
+                        )}
                       </button>
                     ))}
                   </div>
