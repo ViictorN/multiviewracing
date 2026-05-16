@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { Inter, JetBrains_Mono } from 'next/font/google';
+import { Analytics } from '@vercel/analytics/next';
 import './globals.css';
 
 const inter = Inter({
@@ -62,6 +63,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="pt-BR" className={`${inter.variable} ${jetbrainsMono.variable} dark`}>
       <body className="font-sans bg-neutral-950 text-neutral-50 antialiased min-h-screen selection:bg-red-500/30">
         {children}
+        <Analytics />
       </body>
     </html>
   );

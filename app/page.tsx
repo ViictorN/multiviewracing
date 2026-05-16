@@ -152,38 +152,40 @@ export default function RaceControlPage() {
         {currentLayoutMode !== 'main-only' && sideVideoCount.map((video, index) => (
           <div
             key={video.id}
-            onClick={() => setMainVideoId(video.id)}
             className={cn(
-              "relative bg-black group cursor-pointer border-[0.5px] border-white/10 overflow-hidden",
+              "relative bg-black group border-[0.5px] border-white/10 overflow-hidden",
               getSideVideoClasses(index)
             )}
           >
             <iframe
-              src={`https://www.youtube.com/embed/${video.videoId}?autoplay=1&mute=1&playsinline=1&controls=0&modestbranding=1&rel=0`}
-              className="absolute inset-0 w-full h-full border-none pointer-events-none"
+              src={`https://www.youtube.com/embed/${video.videoId}?autoplay=1&mute=1&playsinline=1&controls=1&modestbranding=1&rel=0`}
+              className="absolute inset-0 w-full h-full border-none"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               loading="lazy"
               allowFullScreen
             />
-            {/* Interaction Shield */}
-            <div className="absolute inset-0 z-10 bg-black/5 group-hover:bg-black/20 hover:ring-1 hover:ring-white/50 transition-all" />
             
-            <div className="absolute top-0 left-0 right-0 p-2 bg-gradient-to-b from-black/90 to-transparent pointer-events-none z-20 opacity-0 group-hover:opacity-100 transition-opacity flex justify-between items-start">
-              <h3 className="font-medium text-xs text-neutral-200 drop-shadow-md truncate max-w-[80%]">
+            <div className="absolute top-0 left-0 right-0 p-2 bg-gradient-to-b from-black/80 to-transparent pointer-events-none z-20 flex justify-between items-start h-12">
+              <h3 className="font-medium text-xs text-neutral-200 drop-shadow-md truncate max-w-[70%]">
                 {video.title}
               </h3>
             </div>
             
-            <button
-              onClick={(e) => { e.stopPropagation(); toggleVisibility(video.id); }}
-              className="absolute top-2 right-2 p-1.5 rounded-full bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity z-30 hover:bg-neutral-800"
-              title="Hide Camera"
-            >
-              <EyeOff className="w-3.5 h-3.5" />
-            </button>
-            
-            <div className="absolute inset-0 m-auto w-8 h-8 rounded-full bg-black/60 backdrop-blur justify-center items-center flex opacity-0 group-hover:opacity-100 transition-opacity z-20 pointer-events-none scale-90 group-hover:scale-100">
-              <Maximize className="w-4 h-4 text-white" />
+            <div className="absolute top-2 right-2 flex gap-2 z-30 opacity-0 group-hover:opacity-100 transition-opacity">
+              <button
+                onClick={() => setMainVideoId(video.id)}
+                className="p-1.5 rounded-full bg-black/60 backdrop-blur-sm text-white hover:bg-neutral-800 transition-colors"
+                title="Make Main Camera"
+              >
+                <Maximize className="w-3.5 h-3.5" />
+              </button>
+              <button
+                onClick={() => toggleVisibility(video.id)}
+                className="p-1.5 rounded-full bg-black/60 backdrop-blur-sm text-white hover:bg-neutral-800 transition-colors"
+                title="Hide Camera"
+              >
+                <EyeOff className="w-3.5 h-3.5" />
+              </button>
             </div>
           </div>
         ))}
