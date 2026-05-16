@@ -162,10 +162,6 @@ export default function RaceControlPage() {
             />
           ) : (
             <div className="absolute inset-0 w-full h-full shadow-[inset_0_0_50px_rgba(225,29,72,0.1)] border-[0.5px] border-red-500/20 bg-neutral-950 flex flex-col pointer-events-auto">
-              <div className="h-8 border-b border-red-500/20 bg-black/50 flex items-center px-4 shrink-0 relative z-10">
-                <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse mr-2" />
-                <span className="text-[10px] font-mono text-red-400 uppercase tracking-widest font-semibold flex-1">Live Telemetry Data</span>
-              </div>
               <div className="relative flex-1 overflow-hidden">
                 <iframe
                   src={VIDEOS.find(v => v.id === mainVideoId)?.iframeUrl}
@@ -210,10 +206,6 @@ export default function RaceControlPage() {
                   />
                 ) : (
                   <div className="absolute inset-0 w-full h-full flex flex-col bg-neutral-950 border-[0.5px] border-red-500/20 shadow-[inset_0_0_30px_rgba(225,29,72,0.1)] pointer-events-auto">
-                    <div className="h-6 border-b border-red-500/20 bg-black/50 flex items-center px-2 shrink-0 relative z-10">
-                      <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse mr-2" />
-                      <span className="text-[9px] font-mono text-red-500/80 uppercase tracking-widest flex-1">Telemetry</span>
-                    </div>
                     <div className="relative flex-1 overflow-hidden">
                       <iframe
                         src={video.iframeUrl}
