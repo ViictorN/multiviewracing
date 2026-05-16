@@ -167,8 +167,8 @@ export default function RaceControlPage() {
                   src={VIDEOS.find(v => v.id === mainVideoId)?.iframeUrl}
                   className="absolute left-0 w-full border-none bg-white"
                   style={{ 
-                    top: "-240px", 
-                    height: "calc(100% + 240px)",
+                    top: "-190px", 
+                    height: "calc(100% + 190px)",
                     filter: "invert(1) hue-rotate(180deg) brightness(0.95) contrast(0.95)" 
                   }}
                   allowFullScreen
@@ -211,8 +211,8 @@ export default function RaceControlPage() {
                         src={video.iframeUrl}
                         className="absolute left-0 w-full border-none bg-white pointer-events-auto"
                         style={{ 
-                          top: "-240px", 
-                          height: "calc(100% + 240px)",
+                          top: "-190px", 
+                          height: "calc(100% + 190px)",
                           filter: "invert(1) hue-rotate(180deg) brightness(0.95) contrast(0.95)" 
                         }}
                         loading="lazy"
