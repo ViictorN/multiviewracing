@@ -44,7 +44,7 @@ export default function RaceControlPage() {
   const videos = useMemo<VideoInfo[]>(() => [
     { id: 'main', title: 'Transmissão Principal', videoId: currentMainBroadcastId },
     { id: 'telemetry', title: 'Telemetria', iframeUrl: 'https://livetiming.azurewebsites.net/events/50/results/' },
-    { id: 'ver', title: 'Onboard: Max Verstappen', videoId: '5t3WpNypCUw', driver: 'VER', team: 'Red Bull' },
+    { id: 'ver', title: 'Onboard: Max Verstappen', videoId: 'Keqjx5zqeDE', driver: 'VER', team: 'Red Bull' },
     { id: 'onboard1', title: 'Onboard 1', videoId: 'Uzy9dqrP9o8' },
     { id: 'onboard2', title: 'Onboard 2', videoId: 'diS_9fO2uQE' },
     { id: 'pit', title: 'Câmera dos Boxes', videoId: 'OZdE2ZOAXfo' }
