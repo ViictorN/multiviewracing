@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Settings, Tv, LayoutGrid, Maximize, X, Square, Columns, Rows, Video, Smartphone, EyeOff, Eye } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -15,15 +15,6 @@ type VideoInfo = {
   team?: string;
 };
 
-const VIDEOS: VideoInfo[] = [
-  { id: 'main', title: 'Transmissão Principal', videoId: '4ryVt9OnqeY' },
-  { id: 'telemetry', title: 'Telemetria', iframeUrl: 'https://livetiming.azurewebsites.net/events/50/results/' },
-  { id: 'ver', title: 'Onboard: Max Verstappen', videoId: '5t3WpNypCUw', driver: 'VER', team: 'Red Bull' },
-  { id: 'est', title: 'Onboard: Kevin Estre', videoId: 'uofChxeVADU', driver: 'EST', team: 'Porsche' },
-  { id: 'far', title: 'Onboard: Augusto Farfus', videoId: 'X2Icmd1PXOU', driver: 'FAR', team: 'BMW' },
-  { id: 'pit', title: 'Câmera dos Boxes', videoId: 'OZdE2ZOAXfo' },
-];
-
 type LayoutMode = 'auto' | 'sidebar-right' | 'sidebar-left' | 'sidebar-bottom' | 'grid' | 'main-only';
 
 export default function RaceControlPage() {
@@ -34,6 +25,32 @@ export default function RaceControlPage() {
   const [isLandscape, setIsLandscape] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
+  const [currentMainBroadcastId, setCurrentMainBroadcastId] = useState('VEMcqibD9V4');
+
+  useEffect(() => {
+    const switchTime = new Date('2026-05-17T04:30:00-03:00').getTime();
+    const checkTime = () => {
+      if (Date.now() >= switchTime) {
+        setCurrentMainBroadcastId('Q0H6vLubO48');
+      } else {
+        setCurrentMainBroadcastId('VEMcqibD9V4');
+      }
+    };
+    checkTime();
+    const interval = setInterval(checkTime, 60000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const videos = useMemo<VideoInfo[]>(() => [
+    { id: 'main', title: 'Transmissão Principal', videoId: currentMainBroadcastId },
+    { id: 'telemetry', title: 'Telemetria', iframeUrl: 'https://livetiming.azurewebsites.net/events/50/results/' },
+    { id: 'ver', title: 'Onboard: Max Verstappen', videoId: '5t3WpNypCUw', driver: 'VER', team: 'Red Bull' },
+    { id: 'est', title: 'Onboard: Kevin Estre', videoId: 'uofChxeVADU', driver: 'EST', team: 'Porsche' },
+    { id: 'far', title: 'Onboard: Augusto Farfus', videoId: 'X2Icmd1PXOU', driver: 'FAR', team: 'BMW' },
+    { id: 'pit', title: 'Câmera dos Boxes', videoId: 'OZdE2ZOAXfo' }
+  ], [currentMainBroadcastId]);
+
+  const activeHiddenVideoIds = hiddenVideoIds.filter(id => id !== mainVideoId);
 
   useEffect(() => {
     const checkOrientation = () => setIsLandscape(window.innerWidth > window.innerHeight);
@@ -41,13 +58,6 @@ export default function RaceControlPage() {
     window.addEventListener('resize', checkOrientation);
     return () => window.removeEventListener('resize', checkOrientation);
   }, []);
-
-  // Make sure mainVideoId is never hidden
-  useEffect(() => {
-    if (hiddenVideoIds.includes(mainVideoId)) {
-      setHiddenVideoIds(prev => prev.filter(vid => vid !== mainVideoId));
-    }
-  }, [mainVideoId, hiddenVideoIds]);
 
   const toggleVisibility = (id: string) => {
     setHiddenVideoIds(prev => 
@@ -144,7 +154,7 @@ export default function RaceControlPage() {
     }
   };
 
-  const sideVideoCount = VIDEOS.filter(v => v.id !== mainVideoId && !hiddenVideoIds.includes(v.id));
+  const sideVideoCount = videos.filter(v => v.id !== mainVideoId && !activeHiddenVideoIds.includes(v.id));
 
   const renderSettingsContent = () => (
     <>
@@ -211,7 +221,7 @@ export default function RaceControlPage() {
         <div>
           <label className="text-xs font-medium text-neutral-400 uppercase tracking-wider block mb-2">Câmera Principal</label>
           <div className="space-y-1 max-h-40 overflow-y-auto pr-1 custom-scrollbar mb-4">
-            {VIDEOS.map(video => (
+            {videos.map(video => (
               <button
                 key={`main-sel-${video.id}`}
                 onClick={() => setMainVideoId(video.id)}
@@ -229,7 +239,7 @@ export default function RaceControlPage() {
           {/* Visibility Settings */}
           <label className="text-xs font-medium text-neutral-400 uppercase tracking-wider block mb-2">Visibilidade das Câmeras</label>
           <div className="space-y-1 max-h-40 overflow-y-auto pr-1 custom-scrollbar">
-            {VIDEOS.map(video => (
+            {videos.map(video => (
               <button
                 key={`vis-${video.id}`}
                 onClick={() => video.id !== mainVideoId && toggleVisibility(video.id)}
@@ -242,7 +252,7 @@ export default function RaceControlPage() {
                 <span className="truncate pr-2">{video.title}</span>
                 {video.id === mainVideoId ? (
                   <Eye className="w-3 h-3 text-neutral-600 shrink-0 transition-transform group-hover:scale-110" />
-                ) : hiddenVideoIds.includes(video.id) ? (
+                ) : activeHiddenVideoIds.includes(video.id) ? (
                   <EyeOff className="w-3 h-3 text-neutral-500 shrink-0 transition-transform group-hover:scale-110" />
                 ) : (
                   <Eye className="w-3 h-3 text-red-500 shrink-0 transition-transform group-hover:scale-110" />
@@ -260,9 +270,9 @@ export default function RaceControlPage() {
       <main className={cn(getLayoutClasses(), "flex-1")}>
         {/* Render Main Video First */}
         <div key={`main-${mainVideoId}`} className={cn("relative z-0 bg-black group", getMainVideoClasses())}>
-          {VIDEOS.find(v => v.id === mainVideoId)?.videoId ? (
+          {videos.find(v => v.id === mainVideoId)?.videoId ? (
             <iframe
-              src={`https://www.youtube.com/embed/${VIDEOS.find(v => v.id === mainVideoId)?.videoId}?autoplay=1&mute=1&playsinline=1&controls=1&modestbranding=1&rel=0`}
+              src={`https://www.youtube.com/embed/${videos.find(v => v.id === mainVideoId)?.videoId}?autoplay=1&mute=1&playsinline=1&controls=1&modestbranding=1&rel=0`}
               className="absolute inset-0 w-full h-full pointer-events-auto border-none"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
@@ -271,7 +281,7 @@ export default function RaceControlPage() {
             <div className="absolute inset-0 w-full h-full shadow-[inset_0_0_50px_rgba(225,29,72,0.1)] border-[0.5px] border-red-500/20 bg-neutral-950 flex flex-col pointer-events-auto">
               <div className="relative flex-1 overflow-hidden">
                 <iframe
-                  src={VIDEOS.find(v => v.id === mainVideoId)?.iframeUrl}
+                  src={videos.find(v => v.id === mainVideoId)?.iframeUrl}
                   className="absolute left-0 w-full border-none bg-white"
                   style={{ 
                     top: "-190px", 
@@ -286,7 +296,7 @@ export default function RaceControlPage() {
           {currentLayoutMode !== 'main-only' && (
             <div className="absolute top-0 left-0 right-0 p-4 bg-gradient-to-b from-black/80 via-black/30 to-transparent pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity z-20">
               <h3 className="text-xl font-medium text-white drop-shadow-md">
-                {VIDEOS.find(v => v.id === mainVideoId)?.title}
+                {videos.find(v => v.id === mainVideoId)?.title}
               </h3>
             </div>
           )}

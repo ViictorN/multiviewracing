@@ -11,8 +11,16 @@ export function useIsMobile() {
       setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
     }
     mql.addEventListener("change", onChange)
-    setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
-    return () => mql.removeEventListener("change", onChange)
+    
+    let isMounted = true;
+    requestAnimationFrame(() => {
+      if (isMounted) setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
+    });
+
+    return () => {
+      isMounted = false;
+      mql.removeEventListener("change", onChange)
+    }
   }, [])
 
   return !!isMobile
