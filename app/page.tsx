@@ -45,8 +45,8 @@ export default function RaceControlPage() {
     { id: 'main', title: 'Transmissão Principal', videoId: currentMainBroadcastId },
     { id: 'telemetry', title: 'Telemetria', iframeUrl: 'https://livetiming.azurewebsites.net/events/50/results/' },
     { id: 'ver', title: 'Onboard: Max Verstappen', videoId: '5t3WpNypCUw', driver: 'VER', team: 'Red Bull' },
-    { id: 'est', title: 'Onboard: Kevin Estre', videoId: 'uofChxeVADU', driver: 'EST', team: 'Porsche' },
-    { id: 'far', title: 'Onboard: Augusto Farfus', videoId: 'X2Icmd1PXOU', driver: 'FAR', team: 'BMW' },
+    { id: 'onboard1', title: 'Onboard 1', videoId: 'Uzy9dqrP9o8' },
+    { id: 'onboard2', title: 'Onboard 2', videoId: 'diS_9fO2uQE' },
     { id: 'pit', title: 'Câmera dos Boxes', videoId: 'OZdE2ZOAXfo' }
   ], [currentMainBroadcastId]);
 
