@@ -17,11 +17,11 @@ type VideoInfo = {
 
 const VIDEOS: VideoInfo[] = [
   { id: 'main', title: 'Main Broadcast', videoId: '4ryVt9OnqeY' },
+  { id: 'telemetry', title: 'Live Timing', iframeUrl: 'https://livetiming.azurewebsites.net/events/50/results/' },
   { id: 'ver', title: 'Onboard: Max Verstappen', videoId: '5t3WpNypCUw', driver: 'VER', team: 'Red Bull' },
   { id: 'est', title: 'Onboard: Kevin Estre', videoId: 'uofChxeVADU', driver: 'EST', team: 'Porsche' },
   { id: 'far', title: 'Onboard: Augusto Farfus', videoId: 'X2Icmd1PXOU', driver: 'FAR', team: 'BMW' },
   { id: 'pit', title: 'Pit Lane Camera', videoId: 'OZdE2ZOAXfo' },
-  { id: 'telemetry', title: 'Live Timing', iframeUrl: 'https://livetiming.azurewebsites.net/events/50/results/' },
 ];
 
 type LayoutMode = 'sidebar-right' | 'sidebar-left' | 'sidebar-bottom' | 'grid' | 'main-only';
@@ -65,17 +65,17 @@ export default function RaceControlPage() {
         return "flex flex-col w-full h-full overflow-y-auto overflow-x-hidden custom-scrollbar bg-black";
       case 'sidebar-right':
       case 'mobile-landscape':
-        return "grid grid-cols-4 grid-rows-4 w-full h-full";
+        return "flex flex-row w-full h-full overflow-hidden";
       case 'sidebar-left':
-        return "grid grid-cols-4 grid-rows-4 w-full h-full";
+        return "flex flex-row-reverse w-full h-full overflow-hidden";
       case 'sidebar-bottom':
-        return "grid grid-cols-4 grid-rows-4 w-full h-full";
+        return "flex flex-col w-full h-full overflow-hidden";
       case 'grid':
-        return "grid grid-cols-2 md:grid-cols-3 grid-rows-2 w-full h-full";
+        return "grid grid-cols-2 md:grid-cols-3 auto-rows-fr w-full h-full overflow-y-auto";
       case 'main-only':
-        return "grid grid-cols-1 grid-rows-1 w-full h-full";
+        return "flex w-full h-full";
       default:
-        return "grid grid-cols-4 grid-rows-4 w-full h-full";
+        return "flex flex-row w-full h-full overflow-hidden";
     }
   };
 
@@ -85,33 +85,31 @@ export default function RaceControlPage() {
         return "w-full aspect-video shrink-0 sticky top-0 z-30 shadow-2xl";
       case 'sidebar-right':
       case 'mobile-landscape':
-        return "col-span-3 row-span-4";
       case 'sidebar-left':
-        return "col-span-3 row-span-4 col-start-2";
+        return "w-3/4 h-full shrink-0 flex-grow";
       case 'sidebar-bottom':
-        return "col-span-4 row-span-3";
+        return "w-full h-3/4 shrink-0 flex-grow";
       case 'grid':
-        return "col-span-1 row-span-1";
+        return "col-span-1 md:col-span-2 row-span-2";
       case 'main-only':
-        return "col-span-1 row-span-1";
+        return "w-full h-full";
       default:
-        return "col-span-3 row-span-4";
+        return "w-3/4 h-full shrink-0 flex-grow";
     }
   };
 
-  const getSideVideoClasses = (index: number) => {
+  const getSideContainerClasses = () => {
     switch (currentLayoutMode) {
       case 'mobile-portrait':
-        return "w-full aspect-video shrink-0 border-t border-white/5";
+        return "w-full flex flex-col pb-20";
       case 'sidebar-right':
       case 'mobile-landscape':
-        return `col-span-1 row-span-1 col-start-4 row-start-${index + 1}`;
       case 'sidebar-left':
-        return `col-span-1 row-span-1 col-start-1 row-start-${index + 1}`;
+        return "w-1/4 shrink-0 h-full flex flex-col overflow-y-auto custom-scrollbar";
       case 'sidebar-bottom':
-        return `col-span-1 row-span-1 col-start-${index + 1} row-start-4`;
+        return "w-full h-1/4 shrink-0 flex flex-row overflow-x-auto custom-scrollbar";
       case 'grid':
-        return "col-span-1 row-span-1";
+        return "contents";
       case 'main-only':
         return "hidden";
       default:
@@ -119,14 +117,34 @@ export default function RaceControlPage() {
     }
   };
 
-  // Reorder videos to ensure main is at the top/prominent in flex/grid order
-  // but handled mostly via CSS grid positioning.
-  const displayVideos = [...VIDEOS].sort((a, b) => {
-    if (layoutMode === 'grid') return 0; // maintain original order for grid
-    if (a.id === mainVideoId) return -1;
-    if (b.id === mainVideoId) return 1;
-    return 0;
-  });
+  const getSideVideoClasses = (video: VideoInfo) => {
+    const isTelemetry = video.id === 'telemetry';
+    switch (currentLayoutMode) {
+      case 'mobile-portrait':
+        return cn(
+          "w-full shrink-0 border-t border-white/5",
+          isTelemetry ? "flex-1 min-h-[300px]" : "aspect-video"
+        );
+      case 'sidebar-right':
+      case 'mobile-landscape':
+      case 'sidebar-left':
+        return cn(
+          "w-full shrink-0 border-b border-white/10",
+          isTelemetry ? "flex-1 min-h-[150px]" : "aspect-video"
+        );
+      case 'sidebar-bottom':
+        return cn(
+          "h-full shrink-0 border-r border-white/10",
+          isTelemetry ? "flex-1 min-w-[300px]" : "aspect-video"
+        );
+      case 'grid':
+        return "col-span-1 row-span-1 min-h-[250px] aspect-video md:aspect-auto border border-white/10";
+      case 'main-only':
+        return "hidden";
+      default:
+        return "";
+    }
+  };
 
   const sideVideoCount = VIDEOS.filter(v => v.id !== mainVideoId && !hiddenVideoIds.includes(v.id));
 
@@ -172,68 +190,72 @@ export default function RaceControlPage() {
         </div>
 
         {/* Render Side Videos */}
-        {currentLayoutMode !== 'main-only' && sideVideoCount.map((video, index) => (
-          <div
-            key={video.id}
-            className={cn(
-              "relative bg-black group border-[0.5px] border-white/10 overflow-hidden",
-              getSideVideoClasses(index)
-            )}
-          >
-            {video.videoId ? (
-              <iframe
-                src={`https://www.youtube.com/embed/${video.videoId}?autoplay=1&mute=1&playsinline=1&controls=1&modestbranding=1&rel=0`}
-                className="absolute inset-0 w-full h-full border-none"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                loading="lazy"
-                allowFullScreen
-              />
-            ) : (
-              <div className="absolute inset-0 w-full h-full flex flex-col bg-neutral-950 border-[0.5px] border-red-500/20 shadow-[inset_0_0_30px_rgba(225,29,72,0.1)] pointer-events-auto">
-                <div className="h-6 border-b border-red-500/20 bg-black/50 flex items-center px-2 shrink-0 relative z-10">
-                  <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse mr-2" />
-                  <span className="text-[9px] font-mono text-red-500/80 uppercase tracking-widest flex-1">Telemetry</span>
-                </div>
-                <div className="relative flex-1 overflow-hidden pointer-events-none">
+        {currentLayoutMode !== 'main-only' && (
+          <div className={getSideContainerClasses()}>
+            {sideVideoCount.map((video) => (
+              <div
+                key={video.id}
+                className={cn(
+                  "relative bg-black group overflow-hidden",
+                  getSideVideoClasses(video)
+                )}
+              >
+                {video.videoId ? (
                   <iframe
-                    src={video.iframeUrl}
-                    className="absolute left-0 w-full border-none bg-white"
-                    style={{ 
-                      top: "-240px", 
-                      height: "calc(100% + 240px)",
-                      filter: "invert(1) hue-rotate(180deg) brightness(0.95) contrast(0.95)" 
-                    }}
+                    src={`https://www.youtube.com/embed/${video.videoId}?autoplay=1&mute=1&playsinline=1&controls=1&modestbranding=1&rel=0`}
+                    className="absolute inset-0 w-full h-full border-none"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     loading="lazy"
                     allowFullScreen
                   />
+                ) : (
+                  <div className="absolute inset-0 w-full h-full flex flex-col bg-neutral-950 border-[0.5px] border-red-500/20 shadow-[inset_0_0_30px_rgba(225,29,72,0.1)] pointer-events-auto">
+                    <div className="h-6 border-b border-red-500/20 bg-black/50 flex items-center px-2 shrink-0 relative z-10">
+                      <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse mr-2" />
+                      <span className="text-[9px] font-mono text-red-500/80 uppercase tracking-widest flex-1">Telemetry</span>
+                    </div>
+                    <div className="relative flex-1 overflow-hidden pointer-events-none">
+                      <iframe
+                        src={video.iframeUrl}
+                        className="absolute left-0 w-full border-none bg-white"
+                        style={{ 
+                          top: "-240px", 
+                          height: "calc(100% + 240px)",
+                          filter: "invert(1) hue-rotate(180deg) brightness(0.95) contrast(0.95)" 
+                        }}
+                        loading="lazy"
+                        allowFullScreen
+                      />
+                    </div>
+                  </div>
+                )}
+                
+                <div className={cn("absolute top-0 left-0 right-0 p-2 bg-gradient-to-b from-black/80 to-transparent pointer-events-none z-20 flex justify-between items-start", video.videoId ? "h-12" : "h-10 opacity-0 group-hover:opacity-100 transition-opacity")}>
+                  <h3 className="font-medium text-xs text-neutral-200 drop-shadow-md truncate max-w-[70%]">
+                    {video.title}
+                  </h3>
+                </div>
+                
+                <div className="absolute top-2 right-2 flex gap-2 z-30 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button
+                    onClick={() => setMainVideoId(video.id)}
+                    className="p-1.5 rounded-full bg-black/60 backdrop-blur-sm text-white hover:bg-neutral-800 transition-colors"
+                    title="Make Main Camera"
+                  >
+                    <Maximize className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    onClick={() => toggleVisibility(video.id)}
+                    className="p-1.5 rounded-full bg-black/60 backdrop-blur-sm text-white hover:bg-neutral-800 transition-colors"
+                    title="Hide Camera"
+                  >
+                    <EyeOff className="w-3.5 h-3.5" />
+                  </button>
                 </div>
               </div>
-            )}
-            
-            <div className={cn("absolute top-0 left-0 right-0 p-2 bg-gradient-to-b from-black/80 to-transparent pointer-events-none z-20 flex justify-between items-start", video.videoId ? "h-12" : "h-10 opacity-0 group-hover:opacity-100 transition-opacity")}>
-              <h3 className="font-medium text-xs text-neutral-200 drop-shadow-md truncate max-w-[70%]">
-                {video.title}
-              </h3>
-            </div>
-            
-            <div className="absolute top-2 right-2 flex gap-2 z-30 opacity-0 group-hover:opacity-100 transition-opacity">
-              <button
-                onClick={() => setMainVideoId(video.id)}
-                className="p-1.5 rounded-full bg-black/60 backdrop-blur-sm text-white hover:bg-neutral-800 transition-colors"
-                title="Make Main Camera"
-              >
-                <Maximize className="w-3.5 h-3.5" />
-              </button>
-              <button
-                onClick={() => toggleVisibility(video.id)}
-                className="p-1.5 rounded-full bg-black/60 backdrop-blur-sm text-white hover:bg-neutral-800 transition-colors"
-                title="Hide Camera"
-              >
-                <EyeOff className="w-3.5 h-3.5" />
-              </button>
-            </div>
+            ))}
           </div>
-        ))}
+        )}
       </main>
 
       {/* Floating Settings Button */}
