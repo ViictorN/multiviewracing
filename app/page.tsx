@@ -24,11 +24,11 @@ const VIDEOS: VideoInfo[] = [
   { id: 'pit', title: 'Câmera dos Boxes', videoId: 'OZdE2ZOAXfo' },
 ];
 
-type LayoutMode = 'sidebar-right' | 'sidebar-left' | 'sidebar-bottom' | 'grid' | 'main-only';
+type LayoutMode = 'auto' | 'sidebar-right' | 'sidebar-left' | 'sidebar-bottom' | 'grid' | 'main-only';
 
 export default function RaceControlPage() {
   const [mainVideoId, setMainVideoId] = useState<string>('main');
-  const [layoutMode, setLayoutMode] = useState<LayoutMode>('sidebar-right');
+  const [layoutMode, setLayoutMode] = useState<LayoutMode>('auto');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [hiddenVideoIds, setHiddenVideoIds] = useState<string[]>([]);
   const [isLandscape, setIsLandscape] = useState(false);
@@ -56,11 +56,15 @@ export default function RaceControlPage() {
   };
 
   // User explicitly selects layout
-  const currentLayoutMode = layoutMode;
+  const currentLayoutMode = layoutMode === 'auto'
+    ? (isMobile ? (isLandscape ? 'sidebar-right' : 'mobile-portrait') : 'sidebar-right')
+    : layoutMode;
 
   // Helper to get video styles depending on layout mode
   const getLayoutClasses = () => {
     switch (currentLayoutMode) {
+      case 'mobile-portrait':
+        return "flex flex-col w-full h-full overflow-y-auto overflow-x-hidden custom-scrollbar bg-black";
       case 'sidebar-right':
         return "flex flex-row w-full h-full overflow-hidden";
       case 'sidebar-left':
@@ -78,6 +82,8 @@ export default function RaceControlPage() {
 
   const getMainVideoClasses = () => {
     switch (currentLayoutMode) {
+      case 'mobile-portrait':
+        return "w-full aspect-video shrink-0 sticky top-0 z-30 shadow-2xl";
       case 'sidebar-right':
       case 'sidebar-left':
         return "w-3/4 h-full shrink-0 flex-grow";
@@ -94,6 +100,8 @@ export default function RaceControlPage() {
 
   const getSideContainerClasses = () => {
     switch (currentLayoutMode) {
+      case 'mobile-portrait':
+        return "w-full flex flex-col pb-20";
       case 'sidebar-right':
       case 'sidebar-left':
         return "w-1/4 shrink-0 h-full flex flex-col overflow-y-auto custom-scrollbar";
@@ -111,6 +119,11 @@ export default function RaceControlPage() {
   const getSideVideoClasses = (video: VideoInfo) => {
     const isTelemetry = video.id === 'telemetry';
     switch (currentLayoutMode) {
+      case 'mobile-portrait':
+        return cn(
+          "w-full shrink-0 border-t border-white/5",
+          isTelemetry ? "flex-1 min-h-[300px]" : "aspect-video"
+        );
       case 'sidebar-right':
       case 'sidebar-left':
         return cn(
@@ -149,6 +162,13 @@ export default function RaceControlPage() {
         <div>
           <label className="text-xs font-medium text-neutral-400 uppercase tracking-wider block mb-2">Layout</label>
           <div className="grid grid-cols-3 gap-2">
+            <button
+              onClick={() => setLayoutMode('auto')}
+              className={cn("p-2 rounded-lg border transition-all flex flex-col items-center gap-1 group hover:scale-105 active:scale-95", layoutMode === 'auto' ? "bg-red-500/20 border-red-500/50 text-white" : "border-white/10 text-neutral-400 hover:bg-white/5")}
+            >
+              <Smartphone className={cn("w-4 h-4 transition-transform group-hover:scale-110", layoutMode === 'auto' && "animate-pulse text-red-400")} />
+              <span className="text-[10px]">Auto</span>
+            </button>
             <button
               onClick={() => setLayoutMode('sidebar-right')}
               className={cn("p-2 rounded-lg border transition-all flex flex-col items-center gap-1 group hover:scale-105 active:scale-95", layoutMode === 'sidebar-right' ? "bg-red-500/20 border-red-500/50 text-white" : "border-white/10 text-neutral-400 hover:bg-white/5")}
